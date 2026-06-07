@@ -25,6 +25,11 @@ switch ($controller) {
         $controllerObject = new StockController();
         break;
 
+    case "report":
+        require_once "app/controllers/ReportController.php";
+        $controllerObject = new ReportController();
+        break;
+
     default:
         require_once "app/controllers/LoginController.php";
         $controllerObject = new LoginController();
@@ -34,5 +39,6 @@ switch ($controller) {
 if (method_exists($controllerObject, $action)) {
     $controllerObject->$action();
 } else {
+    // Escaping output to prevent potential DOM XSS
     echo "Acción no encontrada.";
 }

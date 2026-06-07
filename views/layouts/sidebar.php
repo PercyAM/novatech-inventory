@@ -15,7 +15,7 @@
             <a href="#">Usuarios</a>
         <?php } ?>
 
-        <a href="#">Reportes</a>
+        <a href="index.php?controller=report&action=inventario">Reportes</a>
         <a href="#">Historial</a>
     </div>
 

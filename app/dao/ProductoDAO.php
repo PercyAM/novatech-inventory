@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
 
 require_once "app/dao/interfaces/IProductoDAO.php";
 require_once "app/models/Producto.php";
 require_once "app/models/DetalleProducto.php";
+require_once "app/helpers/AppLogger.php";
 
 class ProductoDAO implements IProductoDAO
 {
@@ -89,9 +91,9 @@ class ProductoDAO implements IProductoDAO
 
             $stmtDetalle = $this->conexion->prepare($sqlDetalle);
             $stmtDetalle->execute([
-                ":categoria" => $detalle->getCategoria(),
-                ":marca" => $detalle->getMarca(),
-                ":descripcion" => $detalle->getDescripcion()
+                ":categoria" => $detalle->categoria,
+                ":marca" => $detalle->marca,
+                ":descripcion" => $detalle->descripcion
             ]);
 
             $idDetalleProducto = (int) $this->conexion->lastInsertId();
@@ -124,21 +126,28 @@ class ProductoDAO implements IProductoDAO
             $stmtProducto = $this->conexion->prepare($sqlProducto);
             $stmtProducto->execute([
                 ":id_detalle_producto" => $idDetalleProducto,
-                ":codigo_producto" => $producto->getCodigoProducto(),
-                ":nombre_producto" => $producto->getNombreProducto(),
-                ":modelo" => $producto->getModelo(),
-                ":stock_actual" => $producto->getStockActual(),
-                ":stock_minimo" => $producto->getStockMinimo(),
-                ":precio_referencial" => $producto->getPrecioReferencial(),
-                ":descripcion" => $producto->getDescripcion(),
-                ":estado" => $producto->getEstado()
+                ":codigo_producto" => $producto->codigoProducto,
+                ":nombre_producto" => $producto->nombreProducto,
+                ":modelo" => $producto->modelo,
+                ":stock_actual" => $producto->stockActual,
+                ":stock_minimo" => $producto->stockMinimo,
+                ":precio_referencial" => $producto->precioReferencial,
+                ":descripcion" => $producto->descripcion,
+                ":estado" => $producto->estado
             ]);
 
             $this->conexion->commit();
             return true;
 
         } catch (Exception $e) {
-            $this->conexion->rollBack();
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            AppLogger::getInstance()->error("Failed to register product in database", [
+                'codigo_producto' => $producto->codigoProducto,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return false;
         }
     }
@@ -156,10 +165,10 @@ class ProductoDAO implements IProductoDAO
 
             $stmtDetalle = $this->conexion->prepare($sqlDetalle);
             $stmtDetalle->execute([
-                ":categoria" => $detalle->getCategoria(),
-                ":marca" => $detalle->getMarca(),
-                ":descripcion" => $detalle->getDescripcion(),
-                ":id_detalle_producto" => $detalle->getIdDetalleProducto()
+                ":categoria" => $detalle->categoria,
+                ":marca" => $detalle->marca,
+                ":descripcion" => $detalle->descripcion,
+                ":id_detalle_producto" => $detalle->idDetalleProducto
             ]);
 
             $sqlProducto = "UPDATE producto
@@ -175,78 +184,94 @@ class ProductoDAO implements IProductoDAO
 
             $stmtProducto = $this->conexion->prepare($sqlProducto);
             $stmtProducto->execute([
-                ":codigo_producto" => $producto->getCodigoProducto(),
-                ":nombre_producto" => $producto->getNombreProducto(),
-                ":modelo" => $producto->getModelo(),
-                ":stock_actual" => $producto->getStockActual(),
-                ":stock_minimo" => $producto->getStockMinimo(),
-                ":precio_referencial" => $producto->getPrecioReferencial(),
-                ":descripcion" => $producto->getDescripcion(),
-                ":estado" => $producto->getEstado(),
-                ":id_producto" => $producto->getIdProducto()
+                ":codigo_producto" => $producto->codigoProducto,
+                ":nombre_producto" => $producto->nombreProducto,
+                ":modelo" => $producto->modelo,
+                ":stock_actual" => $producto->stockActual,
+                ":stock_minimo" => $producto->stockMinimo,
+                ":precio_referencial" => $producto->precioReferencial,
+                ":descripcion" => $producto->descripcion,
+                ":estado" => $producto->estado,
+                ":id_producto" => $producto->idProducto
             ]);
 
             $this->conexion->commit();
             return true;
 
         } catch (Exception $e) {
-            $this->conexion->rollBack();
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            AppLogger::getInstance()->error("Failed to update product in database", [
+                'id_producto' => $producto->idProducto,
+                'codigo_producto' => $producto->codigoProducto,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return false;
         }
     }
 
     public function eliminar(int $idProducto): bool
     {
-        $sqlMovimientos = "SELECT COUNT(*) AS total 
-                           FROM movimiento_inventario 
-                           WHERE id_producto = :id_producto";
+        try {
+            $sqlMovimientos = "SELECT COUNT(*) AS total 
+                               FROM movimiento_inventario 
+                               WHERE id_producto = :id_producto";
 
-        $stmt = $this->conexion->prepare($sqlMovimientos);
-        $stmt->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
-        $stmt->execute();
+            $stmt = $this->conexion->prepare($sqlMovimientos);
+            $stmt->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
+            $stmt->execute();
 
-        $resultado = $stmt->fetch();
+            $resultado = $stmt->fetch();
 
-        if ($resultado["total"] > 0) {
-            $sql = "UPDATE producto 
-                    SET estado = 'Inactivo' 
-                    WHERE id_producto = :id_producto";
-        } else {
-            $sql = "DELETE FROM producto 
-                    WHERE id_producto = :id_producto";
+            if ((int)$resultado["total"] > 0) {
+                $sql = "UPDATE producto 
+                        SET estado = 'Inactivo' 
+                        WHERE id_producto = :id_producto";
+            } else {
+                $sql = "DELETE FROM producto 
+                        WHERE id_producto = :id_producto";
+            }
+
+            $stmtEliminar = $this->conexion->prepare($sql);
+            $stmtEliminar->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
+
+            return $stmtEliminar->execute();
+        } catch (Exception $e) {
+            AppLogger::getInstance()->error("Failed to delete/deactivate product", [
+                'id_producto' => $idProducto,
+                'error' => $e->getMessage()
+            ]);
+            return false;
         }
-
-        $stmtEliminar = $this->conexion->prepare($sql);
-        $stmtEliminar->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
-
-        return $stmtEliminar->execute();
     }
 
     public function listarStockBajo(): array
     {
-    $sql = "SELECT 
-                p.id_producto,
-                p.id_detalle_producto,
-                p.codigo_producto,
-                p.nombre_producto,
-                p.modelo,
-                p.stock_actual,
-                p.stock_minimo,
-                p.precio_referencial,
-                p.descripcion,
-                p.estado,
-                d.categoria,
-                d.marca,
-                d.descripcion AS descripcion_detalle
-            FROM producto p
-            INNER JOIN detalle_producto d 
-                ON p.id_detalle_producto = d.id_detalle_producto
-            WHERE p.stock_actual <= p.stock_minimo
-            ORDER BY p.stock_actual ASC";
+        $sql = "SELECT 
+                    p.id_producto,
+                    p.id_detalle_producto,
+                    p.codigo_producto,
+                    p.nombre_producto,
+                    p.modelo,
+                    p.stock_actual,
+                    p.stock_minimo,
+                    p.precio_referencial,
+                    p.descripcion,
+                    p.estado,
+                    d.categoria,
+                    d.marca,
+                    d.descripcion AS descripcion_detalle
+                FROM producto p
+                INNER JOIN detalle_producto d 
+                    ON p.id_detalle_producto = d.id_detalle_producto
+                WHERE p.stock_actual <= p.stock_minimo
+                ORDER BY p.stock_actual ASC";
 
-    $stmt = $this->conexion->prepare($sql);
-    $stmt->execute();
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute();
 
-    return $stmt->fetchAll();
+        return $stmt->fetchAll();
     }
-}
+}

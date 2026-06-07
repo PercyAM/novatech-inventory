@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 
 require_once "app/helpers/SessionHelper.php";
 require_once "app/config/Database.php";
 require_once "app/dao/ProductoDAO.php";
 require_once "app/services/ProductoService.php";
+require_once "app/helpers/AppLogger.php";
 
 class ProductoController
 {
@@ -22,7 +24,7 @@ class ProductoController
     {
         SessionHelper::verificarSesion();
 
-        $busqueda = $_GET["buscar"] ?? "";
+        $busqueda = trim((string)($_GET["buscar"] ?? ""));
         $productos = $this->productoService->listarProductos($busqueda);
 
         require_once "views/productos/index.php";
@@ -41,12 +43,21 @@ class ProductoController
 
         $resultado = $this->productoService->registrarProducto($_POST);
 
-        if ($resultado) {
-            header("Location: index.php?controller=producto&action=index&mensaje=registrado");
+        if (!$resultado) {
+            AppLogger::getInstance()->warning("Product registration failed", [
+                'codigo_producto' => $_POST["codigo_producto"] ?? null,
+                'usuario' => $_SESSION["usuario"]["nombre_usuario"] ?? 'system'
+            ]);
+            header("Location: index.php?controller=producto&action=crear&error=1");
             exit();
         }
 
-        header("Location: index.php?controller=producto&action=crear&error=1");
+        AppLogger::getInstance()->info("Product registered successfully", [
+            'codigo_producto' => $_POST["codigo_producto"] ?? null,
+            'usuario' => $_SESSION["usuario"]["nombre_usuario"] ?? 'system'
+        ]);
+
+        header("Location: index.php?controller=producto&action=index&mensaje=registrado");
         exit();
     }
 
@@ -54,7 +65,12 @@ class ProductoController
     {
         SessionHelper::verificarSesion();
 
-        $idProducto = (int) ($_GET["id"] ?? 0);
+        $idProducto = filter_var($_GET["id"] ?? 0, FILTER_VALIDATE_INT);
+        if ($idProducto === false || $idProducto <= 0) {
+            header("Location: index.php?controller=producto&action=index&error=no_encontrado");
+            exit();
+        }
+
         $producto = $this->productoService->obtenerProducto($idProducto);
 
         if (!$producto) {
@@ -71,12 +87,21 @@ class ProductoController
 
         $resultado = $this->productoService->actualizarProducto($_POST);
 
-        if ($resultado) {
-            header("Location: index.php?controller=producto&action=index&mensaje=actualizado");
+        if (!$resultado) {
+            AppLogger::getInstance()->warning("Product update failed", [
+                'id_producto' => $_POST["id_producto"] ?? null,
+                'usuario' => $_SESSION["usuario"]["nombre_usuario"] ?? 'system'
+            ]);
+            header("Location: index.php?controller=producto&action=index&error=actualizar");
             exit();
         }
 
-        header("Location: index.php?controller=producto&action=index&error=actualizar");
+        AppLogger::getInstance()->info("Product updated successfully", [
+            'id_producto' => $_POST["id_producto"] ?? null,
+            'usuario' => $_SESSION["usuario"]["nombre_usuario"] ?? 'system'
+        ]);
+
+        header("Location: index.php?controller=producto&action=index&mensaje=actualizado");
         exit();
     }
 
@@ -84,15 +109,29 @@ class ProductoController
     {
         SessionHelper::verificarSesion();
 
-        $idProducto = (int) ($_GET["id"] ?? 0);
-        $resultado = $this->productoService->eliminarProducto($idProducto);
-
-        if ($resultado) {
-            header("Location: index.php?controller=producto&action=index&mensaje=eliminado");
+        $idProducto = filter_var($_GET["id"] ?? 0, FILTER_VALIDATE_INT);
+        if ($idProducto === false || $idProducto <= 0) {
+            header("Location: index.php?controller=producto&action=index&error=eliminar");
             exit();
         }
 
-        header("Location: index.php?controller=producto&action=index&error=eliminar");
+        $resultado = $this->productoService->eliminarProducto($idProducto);
+
+        if (!$resultado) {
+            AppLogger::getInstance()->warning("Product deletion/deactivation failed", [
+                'id_producto' => $idProducto,
+                'usuario' => $_SESSION["usuario"]["nombre_usuario"] ?? 'system'
+            ]);
+            header("Location: index.php?controller=producto&action=index&error=eliminar");
+            exit();
+        }
+
+        AppLogger::getInstance()->info("Product deleted/deactivated successfully", [
+            'id_producto' => $idProducto,
+            'usuario' => $_SESSION["usuario"]["nombre_usuario"] ?? 'system'
+        ]);
+
+        header("Location: index.php?controller=producto&action=index&mensaje=eliminado");
         exit();
     }
-}
+}

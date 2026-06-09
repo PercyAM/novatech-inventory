@@ -1,0 +1,1 @@
+{"timestamp":"2026-06-08T01:29:04+02:00","level":"INFO","message":"Test message with newline\nInjecting admin successful login","context":{"user":"attacker\nlevel:admin"}}

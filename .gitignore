@@ -1,0 +1,15 @@
+# Java / Maven
+java-tools/target/
+
+# Reportes generados
+storage/reportes/*.xlsx
+
+# Logs
+storage/logs/*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Configuración local del editor
+.vscode/

@@ -1,5 +1,3 @@
-# Java / Maven
-java-tools/target/
 
 # Reportes generados
 storage/reportes/*.xlsx

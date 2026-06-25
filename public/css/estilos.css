@@ -5,8 +5,84 @@
 
 body {
     margin: 0;
-    background: #f4f6f8;
-    color: #1e293b;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* Sidebar fija */
+.sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background-color: #1f2937;
+    color: #ffffff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+/* Contenido principal separado de la sidebar */
+.content {
+    margin-left: 260px;
+    padding: 30px;
+    width: calc(100% - 260px);
+    min-height: 100vh;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Tarjetas */
+.card {
+    background-color: #ffffff;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Formularios */
+.formulario {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+/* Tabla responsive */
+.tabla-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Tabla */
+.tabla {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tabla th {
+    background-color: #f3f4f6;
 }
 
 .login-body {
@@ -387,5 +463,151 @@ td {
     .dashboard-grid,
     .quick-actions {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ================================
+   CORRECCIÓN DE LAYOUT GENERAL
+   Sidebar fija + contenido separado
+================================ */
+
+:root {
+    --sidebar-width: 260px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+}
+
+/* Sidebar fija */
+.sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width) !important;
+    height: 100vh;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+/* Contenido principal */
+main.content,
+.content {
+    margin-left: var(--sidebar-width) !important;
+    width: calc(100vw - var(--sidebar-width)) !important;
+    max-width: calc(100vw - var(--sidebar-width)) !important;
+    min-height: 100vh;
+    padding: 30px !important;
+    overflow-x: hidden;
+}
+
+/* Evita que los elementos internos se pasen del ancho */
+main.content > *,
+.content > * {
+    max-width: 100%;
+}
+
+/* Tarjetas */
+.card {
+    width: 100% !important;
+    max-width: 100% !important;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+/* Formularios */
+.formulario {
+    width: 100%;
+}
+
+.form-group {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100% !important;
+    max-width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Botón */
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #111827;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Tabla responsive */
+.tabla-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Tabla */
+.tabla {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tabla th {
+    background-color: #f3f4f6;
+    font-weight: bold;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative !important;
+        width: 100% !important;
+        height: auto;
+    }
+
+    main.content,
+    .content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
 }

@@ -13,4 +13,6 @@ interface IMovimientoDAO
     ): bool;
 
     public function listarSalidasRecientes(): array;
+
+    public function listarHistorial(array $filtros): array;
 }

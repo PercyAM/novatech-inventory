@@ -118,4 +118,56 @@ class MovimientoDAO implements IMovimientoDAO
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function listarHistorial(array $filtros): array
+    {
+        $sql = "SELECT 
+                m.id_movimiento,
+                m.fecha_movimiento,
+                m.tipo_movimiento,
+                m.cantidad,
+                m.motivo,
+                m.observacion,
+                p.codigo_producto,
+                p.nombre_producto,
+                u.nombre_usuario
+            FROM movimiento_inventario m
+            INNER JOIN producto p ON m.id_producto = p.id_producto
+            INNER JOIN usuario u ON m.id_usuario = u.id_usuario
+            WHERE 1 = 1";
+
+    $parametros = [];
+
+    if (!empty($filtros["id_producto"])) {
+        $sql .= " AND m.id_producto = :id_producto";
+        $parametros[":id_producto"] = $filtros["id_producto"];
+    }
+
+    if (!empty($filtros["tipo_movimiento"])) {
+        $sql .= " AND m.tipo_movimiento = :tipo_movimiento";
+        $parametros[":tipo_movimiento"] = $filtros["tipo_movimiento"];
+    }
+
+    if (!empty($filtros["fecha_inicio"])) {
+        $sql .= " AND DATE(m.fecha_movimiento) >= :fecha_inicio";
+        $parametros[":fecha_inicio"] = $filtros["fecha_inicio"];
+    }
+
+    if (!empty($filtros["fecha_fin"])) {
+        $sql .= " AND DATE(m.fecha_movimiento) <= :fecha_fin";
+        $parametros[":fecha_fin"] = $filtros["fecha_fin"];
+    }
+
+    $sql .= " ORDER BY m.fecha_movimiento DESC LIMIT 100";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    foreach ($parametros as $clave => $valor) {
+        $stmt->bindValue($clave, $valor);
+    }
+
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

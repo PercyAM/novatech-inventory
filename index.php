@@ -25,6 +25,11 @@ switch ($controller) {
         $controllerObject = new StockController();
         break;
 
+    case "entrada":
+        require_once "app/controllers/EntradaController.php";
+        $controllerObject = new EntradaController();
+        break;
+
     case "salida":
         require_once "app/controllers/SalidaController.php";
         $controllerObject = new SalidaController();
@@ -43,11 +48,6 @@ switch ($controller) {
     case "historial":
         require_once "app/controllers/HistorialController.php";
         $controllerObject = new HistorialController();
-        break;
-        
-    case "entrada":
-        require_once "app/controllers/EntradaController.php";
-        $controllerObject = new EntradaController();
         break;
 
     default:

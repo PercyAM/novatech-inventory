@@ -1,2 +1,6 @@
 {"timestamp":"2026-06-08T01:29:04+02:00","level":"INFO","message":"Test message with newline\nInjecting admin successful login","context":{"user":"attacker\nlevel:admin"}}
 {"timestamp":"2026-06-11T19:25:57+02:00","level":"INFO","message":"User logged in successfully","context":{"id_usuario":1,"nombre_usuario":"admin"}}
+{"timestamp":"2026-06-25T20:25:31+02:00","level":"INFO","message":"User logging out","context":{"id_usuario":1}}
+{"timestamp":"2026-06-25T20:25:36+02:00","level":"INFO","message":"User logged in successfully","context":{"id_usuario":2,"nombre_usuario":"carlos"}}
+{"timestamp":"2026-06-25T20:25:55+02:00","level":"INFO","message":"User logging out","context":{"id_usuario":2}}
+{"timestamp":"2026-06-25T20:25:59+02:00","level":"INFO","message":"User logged in successfully","context":{"id_usuario":1,"nombre_usuario":"admin"}}

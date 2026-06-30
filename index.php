@@ -25,6 +25,11 @@ switch ($controller) {
         $controllerObject = new StockController();
         break;
 
+    case "ajuste":
+        require_once "app/controllers/AjusteController.php";
+        $controllerObject = new AjusteController();
+        break;
+
     case "entrada":
         require_once "app/controllers/EntradaController.php";
         $controllerObject = new EntradaController();

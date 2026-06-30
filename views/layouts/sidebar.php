@@ -9,6 +9,7 @@
         <a href="index.php?controller=producto&action=index">Productos</a>
         <a href="index.php?controller=stock&action=index">Consulta de stock</a>
         <a href="index.php?controller=stock&action=bajo">Stock bajo</a>
+        <a href="index.php?controller=ajuste&action=index">Ajuste de inventario</a>
         <a href="index.php?controller=entrada&action=index">Entrada de productos</a>
         <a href="index.php?controller=salida&action=index">Salida de productos</a>
 

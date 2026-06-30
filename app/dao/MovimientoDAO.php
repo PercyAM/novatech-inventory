@@ -254,4 +254,115 @@ class MovimientoDAO implements IMovimientoDAO
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function obtenerProductoPorId(int $idProducto): ?array
+{
+    $sql = "SELECT 
+                id_producto,
+                codigo_producto,
+                nombre_producto,
+                modelo,
+                stock_actual,
+                stock_minimo,
+                estado
+            FROM producto
+            WHERE id_producto = :id_producto
+            LIMIT 1";
+
+    $stmt = $this->conexion->prepare($sql);
+    $stmt->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $producto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $producto ?: null;
+}
+
+    public function registrarAjusteStock(
+    int $idProducto,
+    int $idUsuario,
+    int $stockNuevo,
+    int $cantidadDiferencia,
+    string $tipoMovimiento,
+    string $motivo,
+    string $observacion
+    ): bool {
+    try {
+        $this->conexion->beginTransaction();
+
+        $sqlProducto = "SELECT id_producto, stock_actual
+                        FROM producto
+                        WHERE id_producto = :id_producto
+                        AND estado = 'Activo'
+                        FOR UPDATE";
+
+        $stmtProducto = $this->conexion->prepare($sqlProducto);
+        $stmtProducto->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
+        $stmtProducto->execute();
+
+        $producto = $stmtProducto->fetch(PDO::FETCH_ASSOC);
+
+        if (!$producto) {
+            throw new Exception("El producto no existe o se encuentra inactivo.");
+        }
+
+        $sqlActualizar = "UPDATE producto
+                          SET stock_actual = :stock_nuevo
+                          WHERE id_producto = :id_producto";
+
+        $stmtActualizar = $this->conexion->prepare($sqlActualizar);
+        $stmtActualizar->bindParam(":stock_nuevo", $stockNuevo, PDO::PARAM_INT);
+        $stmtActualizar->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
+        $stmtActualizar->execute();
+
+        $sqlMovimiento = "INSERT INTO movimiento_inventario
+                          (id_producto, id_usuario, tipo_movimiento, cantidad, motivo, observacion)
+                          VALUES
+                          (:id_producto, :id_usuario, :tipo_movimiento, :cantidad, :motivo, :observacion)";
+
+        $stmtMovimiento = $this->conexion->prepare($sqlMovimiento);
+        $stmtMovimiento->bindParam(":id_producto", $idProducto, PDO::PARAM_INT);
+        $stmtMovimiento->bindParam(":id_usuario", $idUsuario, PDO::PARAM_INT);
+        $stmtMovimiento->bindParam(":tipo_movimiento", $tipoMovimiento);
+        $stmtMovimiento->bindParam(":cantidad", $cantidadDiferencia, PDO::PARAM_INT);
+        $stmtMovimiento->bindParam(":motivo", $motivo);
+        $stmtMovimiento->bindParam(":observacion", $observacion);
+        $stmtMovimiento->execute();
+
+        $this->conexion->commit();
+
+        return true;
+    } catch (Exception $e) {
+        if ($this->conexion->inTransaction()) {
+            $this->conexion->rollBack();
+        }
+
+        throw $e;
+    }
+}
+
+    public function listarAjustesRecientes(): array
+    {
+    $sql = "SELECT 
+                m.id_movimiento,
+                m.fecha_movimiento,
+                m.tipo_movimiento,
+                p.codigo_producto,
+                p.nombre_producto,
+                u.nombre_usuario,
+                m.cantidad,
+                m.motivo,
+                m.observacion
+            FROM movimiento_inventario m
+            INNER JOIN producto p ON m.id_producto = p.id_producto
+            INNER JOIN usuario u ON m.id_usuario = u.id_usuario
+            WHERE m.motivo LIKE 'Ajuste%'
+            ORDER BY m.fecha_movimiento DESC
+            LIMIT 10";
+
+    $stmt = $this->conexion->prepare($sql);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

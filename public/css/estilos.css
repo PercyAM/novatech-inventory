@@ -611,3 +611,38 @@ main.content > *,
         max-width: 100% !important;
     }
 }
+
+/* =========================================================
+   SIDEBAR CON ÍCONOS
+   ========================================================= */
+
+.sidebar .menu a,
+.sidebar .cerrar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-icon {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.sidebar .menu a span:last-child,
+.sidebar .cerrar a span:last-child {
+    flex: 1;
+}
+
+/* Módulo activo */
+.sidebar .menu a.active {
+    background-color: #1f2937;
+    color: #ffffff;
+    border-radius: 6px;
+    font-weight: bold;
+}

@@ -4,3 +4,4 @@
 {"timestamp":"2026-06-25T20:25:36+02:00","level":"INFO","message":"User logged in successfully","context":{"id_usuario":2,"nombre_usuario":"carlos"}}
 {"timestamp":"2026-06-25T20:25:55+02:00","level":"INFO","message":"User logging out","context":{"id_usuario":2}}
 {"timestamp":"2026-06-25T20:25:59+02:00","level":"INFO","message":"User logged in successfully","context":{"id_usuario":1,"nombre_usuario":"admin"}}
+{"timestamp":"2026-07-02T19:45:03+02:00","level":"INFO","message":"User logged in successfully","context":{"id_usuario":1,"nombre_usuario":"admin"}}

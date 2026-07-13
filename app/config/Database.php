@@ -5,7 +5,7 @@ require_once dirname(__DIR__) . '/helpers/AppLogger.php';
 
 class Database
 {
-    private string $host = "localhost";
+    private string $dbHost = "localhost";
     private string $database = "bd_inventario_computo";
     private string $user = "root";
     private string $password = "";
@@ -16,7 +16,7 @@ class Database
         if ($this->connection === null) {
             try {
                 $this->connection = new PDO(
-                    "mysql:host={$this->host};dbname={$this->database};charset=utf8mb4",
+                    "mysql:host={$this->dbHost};dbname={$this->database};charset=utf8mb4",
                     $this->user,
                     $this->password,
                     [
@@ -28,14 +28,15 @@ class Database
                 );
             } catch (PDOException $e) {
                 AppLogger::getInstance()->critical("Database connection failed", [
-                    'host' => $this->host,
+                    'db_host' => $this->dbHost,
                     'database' => $this->database,
                     'error' => $e->getMessage()
                 ]);
+
                 throw new RuntimeException("Error interno de base de datos. Por favor contacte al administrador.");
             }
         }
 
         return $this->connection;
     }
-}
+}

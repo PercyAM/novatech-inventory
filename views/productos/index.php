@@ -272,7 +272,9 @@ $busqueda = $busqueda ?? "";
             </a>
         </form>
 
-        
+        <a href="index.php?controller=producto&action=crear" class="productos-btn productos-btn-primary">
+            Nuevo producto
+        </a>
     </section>
 
     <section class="productos-card">
